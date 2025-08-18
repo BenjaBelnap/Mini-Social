@@ -34,10 +34,12 @@ public class UserTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void User_Should_Throw_ArgumentException_When_Username_Is_Invalid(string invalidUsername)
+    public void User_Should_Throw_ArgumentException_When_Username_Is_Invalid(string? invalidUsername)
     {
         // Arrange & Act & Assert
+#pragma warning disable CS8604 // Possible null reference argument - intentional for testing
         var action = () => new User("user123", invalidUsername, "john@example.com", "hashedpassword");
+#pragma warning restore CS8604
         
         action.Should().Throw<ArgumentException>()
             .WithMessage("Username cannot be null or whitespace*");
@@ -48,10 +50,12 @@ public class UserTests
     [InlineData("")]
     [InlineData("   ")]
     [InlineData("invalid-email")]
-    public void User_Should_Throw_ArgumentException_When_Email_Is_Invalid(string invalidEmail)
+    public void User_Should_Throw_ArgumentException_When_Email_Is_Invalid(string? invalidEmail)
     {
         // Arrange & Act & Assert
+#pragma warning disable CS8604 // Possible null reference argument - intentional for testing
         var action = () => new User("user123", "john_doe", invalidEmail, "hashedpassword");
+#pragma warning restore CS8604
         
         action.Should().Throw<ArgumentException>();
     }
