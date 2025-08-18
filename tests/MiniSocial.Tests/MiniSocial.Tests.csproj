@@ -18,4 +18,10 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\MiniSocial.Core\MiniSocial.Core.csproj" />
+    <ProjectReference Include="..\..\src\MiniSocial.Infrastructure\MiniSocial.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\MiniSocial.Api\MiniSocial.Api.csproj" />
+  </ItemGroup>
+
 </Project>

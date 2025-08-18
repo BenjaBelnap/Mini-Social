@@ -4,14 +4,14 @@
     "D:\\Repos\\Mini-Social\\src\\MiniSocial.Infrastructure\\MiniSocial.Infrastructure.csproj": {}
   },
   "projects": {
-    "D:\\Repos\\Mini-Social\\src\\MiniSocial.Infrastructure\\MiniSocial.Infrastructure.csproj": {
+    "D:\\Repos\\Mini-Social\\src\\MiniSocial.Core\\MiniSocial.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Repos\\Mini-Social\\src\\MiniSocial.Infrastructure\\MiniSocial.Infrastructure.csproj",
-        "projectName": "MiniSocial.Infrastructure",
-        "projectPath": "D:\\Repos\\Mini-Social\\src\\MiniSocial.Infrastructure\\MiniSocial.Infrastructure.csproj",
+        "projectUniqueName": "D:\\Repos\\Mini-Social\\src\\MiniSocial.Core\\MiniSocial.Core.csproj",
+        "projectName": "MiniSocial.Core",
+        "projectPath": "D:\\Repos\\Mini-Social\\src\\MiniSocial.Core\\MiniSocial.Core.csproj",
         "packagesPath": "C:\\Users\\benbe\\.nuget\\packages\\",
-        "outputPath": "D:\\Repos\\Mini-Social\\src\\MiniSocial.Infrastructure\\obj\\",
+        "outputPath": "D:\\Repos\\Mini-Social\\src\\MiniSocial.Core\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -50,6 +50,82 @@
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.201/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "D:\\Repos\\Mini-Social\\src\\MiniSocial.Infrastructure\\MiniSocial.Infrastructure.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Repos\\Mini-Social\\src\\MiniSocial.Infrastructure\\MiniSocial.Infrastructure.csproj",
+        "projectName": "MiniSocial.Infrastructure",
+        "projectPath": "D:\\Repos\\Mini-Social\\src\\MiniSocial.Infrastructure\\MiniSocial.Infrastructure.csproj",
+        "packagesPath": "C:\\Users\\benbe\\.nuget\\packages\\",
+        "outputPath": "D:\\Repos\\Mini-Social\\src\\MiniSocial.Infrastructure\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\benbe\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "D:\\Repos\\Mini-Social\\src\\MiniSocial.Core\\MiniSocial.Core.csproj": {
+                "projectPath": "D:\\Repos\\Mini-Social\\src\\MiniSocial.Core\\MiniSocial.Core.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.200"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "MongoDB.Driver": {
+              "target": "Package",
+              "version": "[3.4.3, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
