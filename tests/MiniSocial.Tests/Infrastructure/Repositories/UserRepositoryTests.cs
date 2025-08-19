@@ -20,13 +20,7 @@ public class UserRepositoryTests : IAsyncDisposable
         var client = new MongoClient("mongodb://localhost:27017");
         _database = client.GetDatabase(_testDatabaseName);
         
-        var mongoSettings = new MongoDbSettings
-        {
-            ConnectionString = "mongodb://localhost:27017",
-            DatabaseName = _testDatabaseName
-        };
-        
-        _repository = new UserRepository(mongoSettings);
+        _repository = new UserRepository(_database);
     }
 
     [Fact]
