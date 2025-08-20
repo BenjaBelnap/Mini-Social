@@ -1,12 +1,33 @@
+using MiniSocial.Infrastructure.Extensions;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+// Configure multiple secret sources (in order of priority)
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables() // Environment variables (for containers/cloud)
+    .AddUserSecrets<Program>(); // User Secrets (for local development)
+
+// Add cloud-specific secret sources based on environment
+if (builder.Environment.IsProduction())
+{
+    // TODO: Add cloud secret providers when deploying
+    // Examples:
+    // - Azure Key Vault: builder.Configuration.AddAzureKeyVault(...)
+    // - AWS Secrets Manager: builder.Configuration.AddSecretsManager(...)
+    // - HashiCorp Vault: builder.Configuration.AddVault(...)
+}
+
+// Add services to the container
 builder.Services.AddOpenApi();
+
+// Register MongoDB and repositories
+builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
