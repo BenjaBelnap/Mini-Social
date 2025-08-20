@@ -12,11 +12,11 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         // Configure MongoDB
-        var mongoDbSettings = configuration.GetSection("MongoDbSettings").Get<MongoDbSettings>();
+        var mongoDbSettings = configuration.GetSection("MongoDb").Get<MongoDbSettings>();
         if (mongoDbSettings == null)
-            throw new InvalidOperationException("MongoDbSettings configuration section is missing");
+            throw new InvalidOperationException("MongoDb configuration section is missing");
 
-        services.Configure<MongoDbSettings>(configuration.GetSection("MongoDbSettings"));
+        services.Configure<MongoDbSettings>(configuration.GetSection("MongoDb"));
 
         // Register MongoDB client and database
         services.AddSingleton<IMongoClient>(provider =>

@@ -17,7 +17,12 @@ public class UserRepositoryTests : IAsyncDisposable
     public UserRepositoryTests()
     {
         _testDatabaseName = $"MiniSocialTest_{Guid.NewGuid():N}";
-        var client = new MongoClient("mongodb://localhost:27017");
+        
+        // Use the same connection string as the application for integration tests
+        var connectionString = Environment.GetEnvironmentVariable("MongoDb__ConnectionString") 
+            ?? "mongodb://minisocial_user:minisocial_password@localhost:27017/minisocial";
+            
+        var client = new MongoClient(connectionString);
         _database = client.GetDatabase(_testDatabaseName);
         
         _repository = new UserRepository(_database);
