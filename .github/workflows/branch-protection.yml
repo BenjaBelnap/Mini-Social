@@ -77,3 +77,21 @@ jobs:
         # to parse coverage and enforce minimum thresholds
         echo "Checking test coverage..."
         find ./coverage -name "*.xml" | head -1
+
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: enforce-tests
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+    
+    - name: Restore dependencies
+      run: dotnet restore
+    
+    - name: Security scan
+      run: dotnet list package --vulnerable --include-transitive
