@@ -1,6 +1,6 @@
 # Mini-Social
 
-[![CI/CD Pipeline](https://github.com/BenjaBelnap/Mini-Social/actions/workflows/ci.yml/badge.svg)](https://github.com/BenjaBelnap/Mini-Social/actions/workflows/ci.yml)
+[![CI/CD Pipeline](https://github.com/BenjaBelnap/Mini-Social/actions/workflows/branch-protection.yml/badge.svg)](https://github.com/BenjaBelnap/Mini-Social/actions/workflows/branch-protection.yml)
 
 A lightweight social media platform built with C# and MongoDB, following test-driven development practices.
 
