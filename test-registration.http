@@ -1,0 +1,63 @@
+### User Registration Test
+
+# Register a new user
+POST http://localhost:5093/api/users/register
+Content-Type: application/json
+
+{
+  "username": "johndoe",
+  "email": "john@example.com",
+  "password": "SecurePassword123!",
+  "bio": "I'm a software developer who loves coding!"
+}
+
+###
+
+# Try to register with the same username (should fail)
+POST http://localhost:5093/api/users/register
+Content-Type: application/json
+
+{
+  "username": "johndoe",
+  "email": "john2@example.com",
+  "password": "AnotherPassword123!",
+  "bio": "Another user"
+}
+
+###
+
+# Try to register with the same email (should fail)
+POST http://localhost:5093/api/users/register
+Content-Type: application/json
+
+{
+  "username": "johnsmith",
+  "email": "john@example.com",
+  "password": "AnotherPassword123!",
+  "bio": "John Smith"
+}
+
+###
+
+# Register a second user with different credentials
+POST http://localhost:5093/api/users/register
+Content-Type: application/json
+
+{
+  "username": "janesmith",
+  "email": "jane@example.com", 
+  "password": "JanePassword123!",
+  "bio": "Designer and coffee enthusiast"
+}
+
+###
+
+# Try to register with missing required fields (should fail)
+POST http://localhost:5093/api/users/register
+Content-Type: application/json
+
+{
+  "username": "",
+  "email": "test@example.com",
+  "password": "password"
+}

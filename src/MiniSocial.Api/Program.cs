@@ -1,4 +1,5 @@
 using MiniSocial.Infrastructure.Extensions;
+using MiniSocial.Api.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -56,6 +57,9 @@ app.MapGet("/weatherforecast", () =>
     return forecast;
 })
 .WithName("GetWeatherForecast");
+
+// Map user registration endpoint
+app.MapUserEndpoints();
 
 app.Run();
 
