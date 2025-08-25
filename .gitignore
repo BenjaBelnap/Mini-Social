@@ -44,6 +44,13 @@ project.lock.json
 project.fragment.lock.json
 artifacts/
 
+# NuGet
+project.assets.json
+project.nuget.cache
+*.nuget.props
+*.nuget.targets
+packages.lock.json
+
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
 
