@@ -21,6 +21,7 @@ if (builder.Environment.IsProduction())
 
 // Add services to the container
 builder.Services.AddOpenApi();
+builder.Services.AddSwaggerGen();
 
 // Register MongoDB and repositories
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -31,6 +32,8 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
