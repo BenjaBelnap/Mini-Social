@@ -50,7 +50,7 @@ public static class ServiceCollectionExtensions
 
     private static void ConfigureMongoDbSerialization()
     {
-        // Only register conventions if not already registered
+        // Only register conventions and class maps if not already registered
         if (!BsonClassMap.IsClassMapRegistered(typeof(User)))
         {
             // Configure camelCase naming convention for MongoDB field names
@@ -59,13 +59,12 @@ public static class ServiceCollectionExtensions
                 new CamelCaseElementNameConvention()
             };
             ConventionRegistry.Register("camelCase", conventionPack, t => true);
-
-            // Configure User class mapping
+        
             BsonClassMap.RegisterClassMap<User>(cm =>
             {
                 cm.AutoMap();
-                // Don't map Id to _id, keep it as a separate 'id' field
-                cm.MapMember(c => c.Id).SetElementName("id");
+                // Map the Id property to MongoDB's _id field
+                cm.MapIdMember(c => c.Id);
                 cm.MapMember(c => c.Username).SetElementName("username");
                 cm.MapMember(c => c.Email).SetElementName("email");
                 cm.MapMember(c => c.PasswordHash).SetElementName("passwordHash");
@@ -74,6 +73,7 @@ public static class ServiceCollectionExtensions
                 cm.MapMember(c => c.CreatedAt).SetElementName("createdAt");
                 cm.MapMember(c => c.FollowersCount).SetElementName("followersCount");
                 cm.MapMember(c => c.FollowingCount).SetElementName("followingCount");
+                cm.SetIgnoreExtraElements(true);
             });
         }
     }

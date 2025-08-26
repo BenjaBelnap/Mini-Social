@@ -37,6 +37,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Add detailed error handling for development and test environments
+if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Test")
+{
+    app.UseDeveloperExceptionPage();
+}
+
 app.UseHttpsRedirection();
 
 var summaries = new[]
@@ -62,6 +68,11 @@ app.MapGet("/weatherforecast", () =>
 app.MapUserEndpoints();
 
 app.Run();
+
+/// <summary>
+/// Program class made accessible for integration tests
+/// </summary>
+public partial class Program { } // Make the Program class accessible for integration tests
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {

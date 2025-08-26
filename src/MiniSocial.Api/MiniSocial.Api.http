@@ -1,6 +1,0 @@
-@MiniSocial.Api_HostAddress = http://localhost:5093
-
-GET {{MiniSocial.Api_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

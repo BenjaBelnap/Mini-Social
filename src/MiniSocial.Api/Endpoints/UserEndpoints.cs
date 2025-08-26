@@ -35,6 +35,7 @@ public static class UserEndpoints
     /// <param name="userRepository">The user repository service</param>
     /// <param name="authService">The authentication service for password hashing</param>
     /// <param name="logger">The logger for capturing errors</param>
+    /// <param name="environment">The web host environment for determining error detail level</param>
     /// <returns>The newly created user</returns>
     /// <response code="201">Returns the newly created user</response>
     /// <response code="400">If the request data is invalid or user already exists</response>
@@ -43,7 +44,8 @@ public static class UserEndpoints
         RegisterUserRequest request,
         IUserRepository userRepository,
         IAuthenticationService authService,
-        ILogger<object> logger)
+        ILogger<object> logger,
+        IWebHostEnvironment environment)
     {
         try
         {
@@ -89,18 +91,28 @@ public static class UserEndpoints
                 user.Id, user.Username, user.Email, user.CreatedAt);
 
             // Save to repository
-            var createdUser = await userRepository.CreateAsync(user);
+            try
+            {
+                var createdUser = await userRepository.CreateAsync(user);
+                logger.LogInformation("Successfully created user with Id={Id}", createdUser.Id);
+                
+                // Return response without password hash
+                var response = new UserResponse(
+                    createdUser.Id,
+                    createdUser.Username,
+                    createdUser.Email,
+                    createdUser.Bio,
+                    createdUser.CreatedAt
+                );
 
-            // Return response without password hash
-            var response = new UserResponse(
-                createdUser.Id,
-                createdUser.Username,
-                createdUser.Email,
-                createdUser.Bio,
-                createdUser.CreatedAt
-            );
-
-            return Results.Created($"/api/users/{createdUser.Id}", response);
+                return Results.Created($"/api/users/{createdUser.Id}", response);
+            }
+            catch (Exception repositoryEx)
+            {
+                logger.LogError(repositoryEx, "Repository operation failed for user with Id={Id}, Username={Username}", 
+                    user.Id, user.Username);
+                throw; // Re-throw to be caught by outer exception handler
+            }
         }
         catch (ArgumentException ex)
         {
@@ -110,6 +122,17 @@ public static class UserEndpoints
         catch (Exception ex)
         {
             logger.LogError(ex, "An error occurred while creating user with username: {Username}", request.Username);
+            
+            // In development or test environments, expose more error details
+            if (environment.IsDevelopment() || environment.EnvironmentName == "Test")
+            {
+                return Results.Problem(
+                    title: "An error occurred while creating the user",
+                    detail: $"Exception: {ex.GetType().Name}: {ex.Message}\nStackTrace: {ex.StackTrace}",
+                    statusCode: 500
+                );
+            }
+            
             return Results.Problem("An error occurred while creating the user");
         }
     }

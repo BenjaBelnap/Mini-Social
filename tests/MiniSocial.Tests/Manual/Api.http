@@ -1,7 +1,15 @@
-### User Registration Test
+@MiniSocial.Api_HostAddress = http://localhost:5093
+
+### Weather API Test (Legacy - can be removed when weather endpoint is removed)
+GET {{MiniSocial.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+### User Registration Tests
 
 # Register a new user
-POST http://localhost:5093/api/users/register
+POST {{MiniSocial.Api_HostAddress}}/api/users/register
 Content-Type: application/json
 
 {
@@ -14,7 +22,7 @@ Content-Type: application/json
 ###
 
 # Try to register with the same username (should fail)
-POST http://localhost:5093/api/users/register
+POST {{MiniSocial.Api_HostAddress}}/api/users/register
 Content-Type: application/json
 
 {
@@ -27,7 +35,7 @@ Content-Type: application/json
 ###
 
 # Try to register with the same email (should fail)
-POST http://localhost:5093/api/users/register
+POST {{MiniSocial.Api_HostAddress}}/api/users/register
 Content-Type: application/json
 
 {
@@ -40,7 +48,7 @@ Content-Type: application/json
 ###
 
 # Register a second user with different credentials
-POST http://localhost:5093/api/users/register
+POST {{MiniSocial.Api_HostAddress}}/api/users/register
 Content-Type: application/json
 
 {
@@ -53,7 +61,7 @@ Content-Type: application/json
 ###
 
 # Try to register with missing required fields (should fail)
-POST http://localhost:5093/api/users/register
+POST {{MiniSocial.Api_HostAddress}}/api/users/register
 Content-Type: application/json
 
 {
@@ -61,3 +69,5 @@ Content-Type: application/json
   "email": "test@example.com",
   "password": "password"
 }
+
+###
