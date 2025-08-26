@@ -37,6 +37,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Add detailed error handling for development and test environments
+if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Test")
+{
+    app.UseDeveloperExceptionPage();
+}
+
 app.UseHttpsRedirection();
 
 var summaries = new[]

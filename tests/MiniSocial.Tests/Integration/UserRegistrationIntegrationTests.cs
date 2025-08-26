@@ -8,12 +8,12 @@ using Xunit;
 
 namespace MiniSocial.Tests.Integration;
 
-public class UserRegistrationIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
+public class UserRegistrationIntegrationTests : IClassFixture<TestWebApplicationFactory<Program>>
 {
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly TestWebApplicationFactory<Program> _factory;
     private readonly HttpClient _client;
 
-    public UserRegistrationIntegrationTests(WebApplicationFactory<Program> factory)
+    public UserRegistrationIntegrationTests(TestWebApplicationFactory<Program> factory)
     {
         _factory = factory;
         _client = _factory.CreateClient();
