@@ -38,13 +38,7 @@ public class UserRegistrationIntegrationTests : IClassFixture<WebApplicationFact
         // Assert
         var content = await response.Content.ReadAsStringAsync();
         
-        if (response.StatusCode != HttpStatusCode.Created)
-        {
-            // Print error details for debugging
-            Assert.True(false, $"Expected 201 Created but got {response.StatusCode}. Response: {content}");
-        }
-
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        response.StatusCode.Should().Be(HttpStatusCode.Created, $"Expected 201 Created but got {response.StatusCode}. Response: {content}");
         
         var userResponse = JsonSerializer.Deserialize<UserResponse>(content, new JsonSerializerOptions
         {
