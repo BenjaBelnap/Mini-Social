@@ -23,7 +23,7 @@ public class UserRegistrationIntegrationTests : IClassFixture<TestWebApplication
     public async Task RegisterUser_WithValidData_ShouldReturnCreated()
     {
         // Arrange
-        var uniqueId = Guid.NewGuid().ToString("N")[..8]; // Use first 8 chars of GUID for uniqueness
+        var uniqueId = Guid.NewGuid().ToString("N"); // Use full GUID for uniqueness
         var registerRequest = new RegisterUserRequest
         {
             Username = $"testuser_{uniqueId}",
