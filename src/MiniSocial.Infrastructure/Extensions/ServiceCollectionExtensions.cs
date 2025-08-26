@@ -59,11 +59,7 @@ public static class ServiceCollectionExtensions
                 new CamelCaseElementNameConvention()
             };
             ConventionRegistry.Register("camelCase", conventionPack, t => true);
-        }
-
-        // Register User class mapping with additional safety check
-        if (!BsonClassMap.IsClassMapRegistered(typeof(User)))
-        {
+        
             BsonClassMap.RegisterClassMap<User>(cm =>
             {
                 cm.AutoMap();
