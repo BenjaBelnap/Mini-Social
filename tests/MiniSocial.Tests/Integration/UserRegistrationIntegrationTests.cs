@@ -8,15 +8,11 @@ using Xunit;
 
 namespace MiniSocial.Tests.Integration;
 
-public class UserRegistrationIntegrationTests : IClassFixture<TestWebApplicationFactory<Program>>
+[Collection("Integration Tests")]
+public class UserRegistrationIntegrationTests : IntegrationTestBase
 {
-    private readonly TestWebApplicationFactory<Program> _factory;
-    private readonly HttpClient _client;
-
-    public UserRegistrationIntegrationTests(TestWebApplicationFactory<Program> factory)
+    public UserRegistrationIntegrationTests(TestWebApplicationFactory<Program> factory) : base(factory)
     {
-        _factory = factory;
-        _client = _factory.CreateClient();
     }
 
     [Fact]
@@ -33,7 +29,7 @@ public class UserRegistrationIntegrationTests : IClassFixture<TestWebApplication
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync("/api/users/register", registerRequest);
+        var response = await Client.PostAsJsonAsync("/api/users/register", registerRequest);
 
         // Assert
         var content = await response.Content.ReadAsStringAsync();
@@ -75,8 +71,8 @@ public class UserRegistrationIntegrationTests : IClassFixture<TestWebApplication
         };
 
         // Act
-        await _client.PostAsJsonAsync("/api/users/register", firstUser);
-        var response = await _client.PostAsJsonAsync("/api/users/register", secondUser);
+        await Client.PostAsJsonAsync("/api/users/register", firstUser);
+        var response = await Client.PostAsJsonAsync("/api/users/register", secondUser);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -104,8 +100,8 @@ public class UserRegistrationIntegrationTests : IClassFixture<TestWebApplication
         };
 
         // Act
-        await _client.PostAsJsonAsync("/api/users/register", firstUser);
-        var response = await _client.PostAsJsonAsync("/api/users/register", secondUser);
+        await Client.PostAsJsonAsync("/api/users/register", firstUser);
+        var response = await Client.PostAsJsonAsync("/api/users/register", secondUser);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -124,7 +120,7 @@ public class UserRegistrationIntegrationTests : IClassFixture<TestWebApplication
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync("/api/users/register", invalidRequest);
+        var response = await Client.PostAsJsonAsync("/api/users/register", invalidRequest);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -144,7 +140,7 @@ public class UserRegistrationIntegrationTests : IClassFixture<TestWebApplication
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync("/api/users/register", invalidRequest);
+        var response = await Client.PostAsJsonAsync("/api/users/register", invalidRequest);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);

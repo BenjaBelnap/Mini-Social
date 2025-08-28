@@ -11,8 +11,16 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        // Load environment variables from .env.test file
-        Env.Load(".env.test");
+        // Load environment variables from database/.env file
+        var envFilePath = Path.Combine(
+            Directory.GetCurrentDirectory(), 
+            "..", "..", "..", "..", "..", 
+            "database", ".env");
+            
+        if (File.Exists(envFilePath))
+        {
+            Env.Load(envFilePath);
+        }
         
         builder.ConfigureAppConfiguration((context, config) =>
         {
@@ -27,10 +35,10 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
                   .AddInMemoryCollection(new[]
                   {
                       new KeyValuePair<string, string?>("MongoDb:ConnectionString", 
-                          Environment.GetEnvironmentVariable("MongoDb__ConnectionString")
+                          Environment.GetEnvironmentVariable("MONGO_TEST_CONNECTION_STRING")
                           ?? BuildConnectionString()),
                       new KeyValuePair<string, string?>("MongoDb:DatabaseName", 
-                          $"minisocial_test_{Guid.NewGuid():N}")
+                          Environment.GetEnvironmentVariable("MONGO_TEST_DATABASE") ?? "minisocial_test")
                   });
         });
 
@@ -48,11 +56,11 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
     
     private static string BuildConnectionString()
     {
-        var username = Environment.GetEnvironmentVariable("MONGO_APP_USERNAME") ?? "minisocial_user";
-        var password = Environment.GetEnvironmentVariable("MONGO_APP_PASSWORD") ?? "minisocial_password";
+        var username = Environment.GetEnvironmentVariable("MONGO_TEST_USERNAME") ?? "minisocial_test_user";
+        var password = Environment.GetEnvironmentVariable("MONGO_TEST_PASSWORD") ?? "minisocial_test_password";
         var host = Environment.GetEnvironmentVariable("MONGO_HOST") ?? "localhost";
         var port = Environment.GetEnvironmentVariable("MONGO_PORT") ?? "27017";
-        var database = Environment.GetEnvironmentVariable("MONGO_DATABASE") ?? "minisocial";
+        var database = Environment.GetEnvironmentVariable("MONGO_TEST_DATABASE") ?? "minisocial_test";
         
         return $"mongodb://{username}:{password}@{host}:{port}/{database}?authSource={database}";
     }
