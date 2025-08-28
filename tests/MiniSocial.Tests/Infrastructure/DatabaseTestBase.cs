@@ -131,8 +131,5 @@ public abstract class DatabaseTestBase : IAsyncLifetime
         return Task.CompletedTask;
     }
     
-    async Task IAsyncLifetime.DisposeAsync()
-    {
-        await CleanupDatabaseAsync();
-    }
+
 }
