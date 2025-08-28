@@ -30,8 +30,17 @@ A lightweight social media platform built with C# and MongoDB, following test-dr
 ### Running Tests
 
 ```bash
+# Run all tests
 dotnet test
+
+# Run only unit tests
+dotnet test --filter "FullyQualifiedName!~Integration"
+
+# Run only integration tests  
+dotnet test --filter "FullyQualifiedName~Integration"
 ```
+
+For detailed testing information, see [Testing Guide](docs/TESTING.md).
 
 ### Building the Project
 

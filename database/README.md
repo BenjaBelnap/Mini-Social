@@ -40,9 +40,16 @@ database/
 ## Features
 
 - **Automatic Database Setup**: The `mongo-init.js` script creates:
-  - Application user with proper permissions
-  - Collections with validation schemas
-  - Performance indexes
+  - Application user with proper permissions for production database
+  - Test user with proper permissions for test database 
+  - Collections with validation schemas for both databases
+  - Performance indexes for both databases
+
+- **Test Isolation**: 
+  - Separate test database (`minisocial_test`) with dedicated test user
+  - Consolidated environment configuration in single `.env` file
+  - Tests clean up data after execution while preserving database structure
+  - Integration tests run sequentially to prevent conflicts
 
 - **Security**: 
   - Separate admin and application users
@@ -60,8 +67,12 @@ database/
 | `MONGO_ROOT_USERNAME` | MongoDB admin username | `admin` |
 | `MONGO_ROOT_PASSWORD` | MongoDB admin password | `secure_password` |
 | `MONGO_DATABASE` | Application database name | `minisocial` |
+| `MONGO_TEST_DATABASE` | Test database name | `minisocial_test` |
 | `MONGO_APP_USERNAME` | Application user | `minisocial_user` |
 | `MONGO_APP_PASSWORD` | Application password | `app_password` |
+| `MONGO_TEST_USERNAME` | Test database user | `minisocial_test_user` |
+| `MONGO_TEST_PASSWORD` | Test database password | `minisocial_test_password` |
+| `MONGO_TEST_CONNECTION_STRING` | Complete test DB connection string | `mongodb://test_user:test_pass@localhost:27017/test_db?authSource=test_db` |
 
 ## Cloud Migration
 
