@@ -33,21 +33,25 @@ public abstract class DatabaseTestBase : IAsyncLifetime
             "..", "..", "..", "..", "..", 
             "database", ".env");
             
-        Console.WriteLine($"Looking for .env file at: {envFilePath}");
-        Console.WriteLine($"File exists: {File.Exists(envFilePath)}");
+        // TODO: Replace with proper logging
+        // Console.WriteLine($"Looking for .env file at: {envFilePath}");
+        // Console.WriteLine($"File exists: {File.Exists(envFilePath)}");
             
         if (File.Exists(envFilePath))
         {
             DotNetEnv.Env.Load(envFilePath);
-            Console.WriteLine("Loaded .env file successfully");
+            // TODO: Replace with proper logging
+            // Console.WriteLine("Loaded .env file successfully");
         }
         else
         {
-            Console.WriteLine("Warning: .env file not found, using default values");
+            // TODO: Replace with proper logging
+            // Console.WriteLine("Warning: .env file not found, using default values");
         }
         
         var connectionString = BuildTestConnectionString();
-        Console.WriteLine($"Using connection string: {connectionString}");
+        // TODO: Replace with proper logging
+        // Console.WriteLine($"Using connection string: {connectionString}");
         Client = new MongoClient(connectionString);
         Database = Client.GetDatabase(_testDatabaseName);
     }
@@ -111,10 +115,11 @@ public abstract class DatabaseTestBase : IAsyncLifetime
                 await collection.DeleteManyAsync(Builders<object>.Filter.Empty);
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
+            // TODO: Replace with proper logging
             // Log the exception but don't fail the test
-            Console.WriteLine($"Warning: Failed to cleanup test database: {ex.Message}");
+            // Console.WriteLine($"Warning: Failed to cleanup test database: {ex.Message}");
         }
     }
     

@@ -42,10 +42,11 @@ public abstract class IntegrationTestBase : IClassFixture<TestWebApplicationFact
                 await collection.DeleteManyAsync(Builders<object>.Filter.Empty);
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
+            // TODO: Replace with proper logging
             // Log the exception but don't fail the test
-            Console.WriteLine($"Warning: Failed to cleanup test database: {ex.Message}");
+            // Console.WriteLine($"Warning: Failed to cleanup test database: {ex.Message}");
         }
     }
 
