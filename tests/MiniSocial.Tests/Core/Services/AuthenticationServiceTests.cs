@@ -78,9 +78,9 @@ public class AuthenticationServiceTests
     [Theory]
     [InlineData("", "password")]
     [InlineData("email@test.com", "")]
-    [InlineData(null, "password")]
-    [InlineData("email@test.com", null)]
-    public async Task AuthenticateAsync_Should_Return_Null_When_Credentials_Are_Empty(string email, string password)
+    [InlineData(null!, "password")]
+    [InlineData("email@test.com", null!)]
+    public async Task AuthenticateAsync_Should_Return_Null_When_Credentials_Are_Empty(string? email, string? password)
     {
         // Act
         var result = await _authService.AuthenticateAsync(email, password);
@@ -90,7 +90,7 @@ public class AuthenticationServiceTests
     }
 
     [Fact]
-    public void HashPassword_Should_Return_Consistent_Hash_For_Same_Password()
+    public void HashPassword_Should_Return_Different_Hash_For_Same_Password()
     {
         // Arrange
         var password = "testpassword123";
@@ -100,8 +100,30 @@ public class AuthenticationServiceTests
         var hash2 = _authService.HashPassword(password);
 
         // Assert
-        hash1.Should().Be(hash2);
+        hash1.Should().NotBe(hash2); // Each hash should be unique due to random salt
         hash1.Should().NotBeNullOrWhiteSpace();
+        hash2.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public void HashPassword_Should_Return_Valid_PBKDF2_Format()
+    {
+        // Arrange
+        var password = "testpassword123";
+
+        // Act
+        var hash = _authService.HashPassword(password);
+
+        // Assert
+        var parts = hash.Split('.', 3);
+        parts.Should().HaveCount(3);
+        
+        // First part should be iterations
+        int.Parse(parts[0]).Should().BeGreaterThan(0);
+        
+        // Second and third parts should be valid base64
+        Convert.FromBase64String(parts[1]).Should().HaveCount(32); // 32 byte salt
+        Convert.FromBase64String(parts[2]).Should().HaveCount(32); // 32 byte hash
     }
 
     [Fact]
@@ -144,12 +166,30 @@ public class AuthenticationServiceTests
     [Theory]
     [InlineData("", "hash")]
     [InlineData("password", "")]
-    [InlineData(null, "hash")]
-    [InlineData("password", null)]
-    public void VerifyPassword_Should_Return_False_When_Input_Is_Null_Or_Empty(string password, string hash)
+    [InlineData(null!, "hash")]
+    [InlineData("password", null!)]
+    public void VerifyPassword_Should_Return_False_When_Input_Is_Null_Or_Empty(string? password, string? hash)
     {
         // Act
         var result = _authService.VerifyPassword(password, hash);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("invalid")]
+    [InlineData("invalid.format")]
+    [InlineData("notanumber.salt.hash")]
+    [InlineData("100000.invalidsalt.hash")]
+    [InlineData("100000.dmFsaWRzYWx0.invalidhash")]
+    public void VerifyPassword_Should_Return_False_For_Invalid_Hash_Format(string invalidHash)
+    {
+        // Arrange
+        var password = "testpassword123";
+
+        // Act
+        var result = _authService.VerifyPassword(password, invalidHash);
 
         // Assert
         result.Should().BeFalse();
