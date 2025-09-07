@@ -7,8 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Check if this is a migration command
 if (args.Length > 0 && args[0] == "migrate")
 {
-    await MigrationCommands.RunMigrationCommand(args, builder);
-    return;
+    var exitCode = await MigrationCommands.RunMigrationCommand(args, builder);
+    return exitCode;
 }
 
 // Configure multiple secret sources (in order of priority)
@@ -76,6 +76,8 @@ app.MapGet("/weatherforecast", () =>
 app.MapUserEndpoints();
 
 app.Run();
+
+return 0;
 
 /// <summary>
 /// Program class made accessible for integration tests

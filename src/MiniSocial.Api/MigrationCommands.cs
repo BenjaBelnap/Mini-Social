@@ -11,7 +11,7 @@ public static class MigrationCommands
     /// <summary>
     /// Handles migration commands from the command line.
     /// </summary>
-    public static async Task RunMigrationCommand(string[] args, WebApplicationBuilder builder)
+    public static async Task<int> RunMigrationCommand(string[] args, WebApplicationBuilder builder)
     {
         // Configure services for migration
         builder.Configuration
@@ -35,43 +35,41 @@ public static class MigrationCommands
                     // migrate - run all pending migrations
                     Console.WriteLine("Running migrations to latest version...");
                     var result = await migrationRunner.MigrateToLatestAsync();
-                    DisplayMigrationResult(result, logger);
-                    break;
+                    return DisplayMigrationResult(result, logger);
 
                 case 2 when args[0] == "migrate" && args[1] == "--status":
                     // migrate --status - show current migration status
                     await DisplayMigrationStatus(migrationRunner, logger);
-                    break;
+                    return 0;
 
                 case 3 when args[0] == "migrate" && args[1] == "--target-version":
                     // migrate --target-version 003 - migrate to specific version
                     var targetVersion = args[2];
                     Console.WriteLine($"Running migrations to version {targetVersion}...");
                     var versionResult = await migrationRunner.MigrateToVersionAsync(targetVersion);
-                    DisplayMigrationResult(versionResult, logger);
-                    break;
+                    return DisplayMigrationResult(versionResult, logger);
 
                 default:
                     Console.WriteLine("Usage:");
                     Console.WriteLine("  dotnet run migrate                           - Run all pending migrations");
                     Console.WriteLine("  dotnet run migrate --status                  - Show migration status");
                     Console.WriteLine("  dotnet run migrate --target-version 003     - Migrate to specific version");
-                    Environment.Exit(1);
-                    break;
+                    return 1;
             }
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Migration command failed");
             Console.WriteLine($"Error: {ex.Message}");
-            Environment.Exit(1);
+            return 1;
         }
     }
 
     /// <summary>
     /// Displays the result of a migration operation.
     /// </summary>
-    private static void DisplayMigrationResult(MigrationResult result, ILogger logger)
+    /// <returns>Exit code: 0 for success, 1 for failure</returns>
+    private static int DisplayMigrationResult(MigrationResult result, ILogger logger)
     {
         if (result.Success)
         {
@@ -99,6 +97,8 @@ public static class MigrationCommands
             {
                 Console.WriteLine("No migrations to apply - database is up to date.");
             }
+            
+            return 0;
         }
         else
         {
@@ -114,7 +114,7 @@ public static class MigrationCommands
                 }
             }
             
-            Environment.Exit(1);
+            return 1;
         }
     }
 
