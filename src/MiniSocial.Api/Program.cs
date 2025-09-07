@@ -1,7 +1,15 @@
 using MiniSocial.Infrastructure.Extensions;
 using MiniSocial.Api.Endpoints;
+using MiniSocial.Api;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Check if this is a migration command
+if (args.Length > 0 && args[0] == "migrate")
+{
+    await MigrationCommands.RunMigrationCommand(args, builder);
+    return;
+}
 
 // Configure multiple secret sources (in order of priority)
 builder.Configuration

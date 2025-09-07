@@ -42,6 +42,28 @@ dotnet test --filter "FullyQualifiedName~Integration"
 
 For detailed testing information, see [Testing Guide](docs/TESTING.md).
 
+### Database Migrations
+
+The project uses a C# migration system for database schema management:
+
+```bash
+# Run all pending migrations
+dotnet run --project src/MiniSocial.Api migrate
+
+# Check migration status
+dotnet run --project src/MiniSocial.Api migrate --status
+
+# Migrate to specific version
+dotnet run --project src/MiniSocial.Api migrate --target-version 002
+```
+
+**Key Benefits:**
+- ✅ Migrate from any version to current
+- ✅ Skip already applied migrations
+- ✅ Version tracking in database
+- ✅ Rollback support (via Down methods)
+- ✅ Type-safe C# migrations
+
 ### Building the Project
 
 ```bash
