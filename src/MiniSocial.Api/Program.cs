@@ -1,7 +1,15 @@
 using MiniSocial.Infrastructure.Extensions;
 using MiniSocial.Api.Endpoints;
+using MiniSocial.Api;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Check if this is a migration command
+if (args.Length > 0 && args[0] == "migrate")
+{
+    var exitCode = await MigrationCommands.RunMigrationCommand(args, builder);
+    return exitCode;
+}
 
 // Configure multiple secret sources (in order of priority)
 builder.Configuration
@@ -68,6 +76,8 @@ app.MapGet("/weatherforecast", () =>
 app.MapUserEndpoints();
 
 app.Run();
+
+return 0;
 
 /// <summary>
 /// Program class made accessible for integration tests

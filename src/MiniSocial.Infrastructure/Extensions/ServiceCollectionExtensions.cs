@@ -9,6 +9,7 @@ using MiniSocial.Core.Services;
 using MiniSocial.Core.Entities;
 using MiniSocial.Infrastructure.Configuration;
 using MiniSocial.Infrastructure.Repositories;
+using MiniSocial.Infrastructure.Migrations;
 
 namespace MiniSocial.Infrastructure.Extensions;
 
@@ -44,6 +45,9 @@ public static class ServiceCollectionExtensions
 
         // Register services
         services.AddScoped<IAuthenticationService, AuthenticationService>();
+
+        // Register migration services
+        services.AddScoped<IMigrationRunner, MigrationRunner>();
 
         return services;
     }
