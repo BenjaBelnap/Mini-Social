@@ -356,112 +356,57 @@ public class Migration001_InitialSetup : IMigration
     {
         // Users indexes
         var usersCollection = database.GetCollection<BsonDocument>("users");
+        await CreateIndexSafelyAsync(usersCollection, 
+            Builders<BsonDocument>.IndexKeys.Ascending("username"),
+            new CreateIndexOptions { Unique = true });
         
-        try
-        {
-            await usersCollection.Indexes.CreateOneAsync(
-                new CreateIndexModel<BsonDocument>(
-                    Builders<BsonDocument>.IndexKeys.Ascending("username"),
-                    new CreateIndexOptions { Unique = true }));
-        }
-        catch (MongoCommandException ex) when (ex.Code == 85)
-        {
-            // Index already exists - ignore
-        }
-        
-        try
-        {
-            await usersCollection.Indexes.CreateOneAsync(
-                new CreateIndexModel<BsonDocument>(
-                    Builders<BsonDocument>.IndexKeys.Ascending("email"),
-                    new CreateIndexOptions { Unique = true }));
-        }
-        catch (MongoCommandException ex) when (ex.Code == 85)
-        {
-            // Index already exists - ignore
-        }
+        await CreateIndexSafelyAsync(usersCollection,
+            Builders<BsonDocument>.IndexKeys.Ascending("email"),
+            new CreateIndexOptions { Unique = true });
         
         // Posts indexes
         var postsCollection = database.GetCollection<BsonDocument>("posts");
+        await CreateIndexSafelyAsync(postsCollection,
+            Builders<BsonDocument>.IndexKeys.Ascending("userId"));
         
-        try
-        {
-            await postsCollection.Indexes.CreateOneAsync(
-                new CreateIndexModel<BsonDocument>(
-                    Builders<BsonDocument>.IndexKeys.Ascending("userId")));
-        }
-        catch (MongoCommandException ex) when (ex.Code == 85)
-        {
-            // Index already exists - ignore
-        }
-        
-        try
-        {
-            await postsCollection.Indexes.CreateOneAsync(
-                new CreateIndexModel<BsonDocument>(
-                    Builders<BsonDocument>.IndexKeys.Descending("createdAt")));
-        }
-        catch (MongoCommandException ex) when (ex.Code == 85)
-        {
-            // Index already exists - ignore
-        }
+        await CreateIndexSafelyAsync(postsCollection,
+            Builders<BsonDocument>.IndexKeys.Descending("createdAt"));
         
         // Comments indexes
         var commentsCollection = database.GetCollection<BsonDocument>("comments");
+        await CreateIndexSafelyAsync(commentsCollection,
+            Builders<BsonDocument>.IndexKeys.Ascending("postId"));
         
-        try
-        {
-            await commentsCollection.Indexes.CreateOneAsync(
-                new CreateIndexModel<BsonDocument>(
-                    Builders<BsonDocument>.IndexKeys.Ascending("postId")));
-        }
-        catch (MongoCommandException ex) when (ex.Code == 85)
-        {
-            // Index already exists - ignore
-        }
-        
-        try
-        {
-            await commentsCollection.Indexes.CreateOneAsync(
-                new CreateIndexModel<BsonDocument>(
-                    Builders<BsonDocument>.IndexKeys.Ascending("userId")));
-        }
-        catch (MongoCommandException ex) when (ex.Code == 85)
-        {
-            // Index already exists - ignore
-        }
+        await CreateIndexSafelyAsync(commentsCollection,
+            Builders<BsonDocument>.IndexKeys.Ascending("userId"));
         
         // Follows indexes
         var followsCollection = database.GetCollection<BsonDocument>("follows");
+        await CreateIndexSafelyAsync(followsCollection,
+            Builders<BsonDocument>.IndexKeys.Ascending("followerId").Ascending("followeeId"),
+            new CreateIndexOptions { Unique = true });
         
+        await CreateIndexSafelyAsync(followsCollection,
+            Builders<BsonDocument>.IndexKeys.Ascending("followerId"));
+        
+        await CreateIndexSafelyAsync(followsCollection,
+            Builders<BsonDocument>.IndexKeys.Ascending("followeeId"));
+    }
+    
+    /// <summary>
+    /// Creates an index safely, ignoring errors if the index already exists.
+    /// </summary>
+    /// <param name="collection">The MongoDB collection.</param>
+    /// <param name="indexKeys">The index key specification.</param>
+    /// <param name="options">Optional index creation options.</param>
+    private static async Task CreateIndexSafelyAsync(IMongoCollection<BsonDocument> collection, 
+        IndexKeysDefinition<BsonDocument> indexKeys, 
+        CreateIndexOptions? options = null)
+    {
         try
         {
-            await followsCollection.Indexes.CreateOneAsync(
-                new CreateIndexModel<BsonDocument>(
-                    Builders<BsonDocument>.IndexKeys.Ascending("followerId").Ascending("followeeId"),
-                    new CreateIndexOptions { Unique = true }));
-        }
-        catch (MongoCommandException ex) when (ex.Code == 85)
-        {
-            // Index already exists - ignore
-        }
-        
-        try
-        {
-            await followsCollection.Indexes.CreateOneAsync(
-                new CreateIndexModel<BsonDocument>(
-                    Builders<BsonDocument>.IndexKeys.Ascending("followerId")));
-        }
-        catch (MongoCommandException ex) when (ex.Code == 85)
-        {
-            // Index already exists - ignore
-        }
-        
-        try
-        {
-            await followsCollection.Indexes.CreateOneAsync(
-                new CreateIndexModel<BsonDocument>(
-                    Builders<BsonDocument>.IndexKeys.Ascending("followeeId")));
+            var indexModel = new CreateIndexModel<BsonDocument>(indexKeys, options);
+            await collection.Indexes.CreateOneAsync(indexModel);
         }
         catch (MongoCommandException ex) when (ex.Code == 85)
         {
