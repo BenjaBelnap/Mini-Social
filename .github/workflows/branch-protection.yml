@@ -71,12 +71,152 @@ jobs:
         cd database
         docker compose down
     
-    - name: Check test coverage
+    - name: Install ReportGenerator
+      if: always()
       run: |
-        # This is a placeholder - you would typically use a tool like ReportGenerator
-        # to parse coverage and enforce minimum thresholds
-        echo "Checking test coverage..."
-        find ./coverage -name "*.xml" | head -1
+        dotnet tool install -g dotnet-reportgenerator-globaltool
+        # Install bc calculator for decimal math
+        sudo apt-get update && sudo apt-get install -y bc
+    
+    - name: Generate Coverage Report
+      if: always()
+      run: |
+        echo "Generating coverage report..."
+        
+        # Check if coverage files exist
+        COVERAGE_FILES=$(find ./coverage -name "coverage.cobertura.xml" -o -name "*.xml" | grep -E "(coverage|cobertura)" | head -5 | tr '\n' ';')
+        
+        if [ -z "$COVERAGE_FILES" ]; then
+          echo "❌ No coverage files found in ./coverage directory"
+          echo "Contents of coverage directory:"
+          ls -la ./coverage/ || echo "Coverage directory does not exist"
+          exit 1
+        fi
+        
+        echo "Found coverage files: $COVERAGE_FILES"
+        
+        # Generate reports
+        reportgenerator \
+          -reports:"$COVERAGE_FILES" \
+          -targetdir:./coverage-report \
+          -reporttypes:"Html;JsonSummary;Badges" \
+          -verbosity:Info
+    
+    - name: Parse Coverage and Enforce Thresholds
+      if: always()
+      run: |
+        echo "Parsing coverage data and enforcing thresholds..."
+        
+        # Set minimum coverage threshold (configurable)
+        MIN_COVERAGE=80
+        
+        # Debug: List generated files
+        echo "Generated files in coverage-report:"
+        ls -la ./coverage-report/ || echo "Coverage report directory not found"
+        
+        # Try multiple approaches to get coverage data
+        COVERAGE=""
+        
+        # Method 1: Try JSON summary first
+        if [ -f "./coverage-report/Summary.json" ]; then
+          echo "Found Summary.json, attempting to parse..."
+          COVERAGE=$(cat ./coverage-report/Summary.json | grep -o '"linecoverage":"[0-9.]*"' | cut -d'"' -f4)
+          if [ ! -z "$COVERAGE" ]; then
+            echo "✅ Parsed coverage from Summary.json: ${COVERAGE}%"
+          fi
+        fi
+        
+        # Method 2: Try parsing from original XML files if JSON failed
+        if [ -z "$COVERAGE" ]; then
+          echo "Trying to parse coverage from XML files..."
+          XML_FILE=$(find ./coverage -name "coverage.cobertura.xml" | head -1)
+          if [ ! -z "$XML_FILE" ] && [ -f "$XML_FILE" ]; then
+            echo "Found XML file: $XML_FILE"
+            # Parse line-rate from XML (Cobertura format)
+            COVERAGE_DECIMAL=$(grep -o 'line-rate="[0-9.]*"' "$XML_FILE" | head -1 | cut -d'"' -f2)
+            if [ ! -z "$COVERAGE_DECIMAL" ]; then
+              # Convert decimal to percentage (multiply by 100)
+              COVERAGE=$(echo "scale=1; $COVERAGE_DECIMAL * 100" | bc -l | sed 's/\..*//')
+              echo "✅ Parsed coverage from XML: ${COVERAGE}%"
+            fi
+          fi
+        fi
+        
+        # Method 3: Try alternative JSON parsing with simpler approach
+        if [ -z "$COVERAGE" ] && [ -f "./coverage-report/Summary.json" ]; then
+          echo "Trying alternative JSON parsing..."
+          # Look for any number that might be coverage percentage
+          COVERAGE=$(cat ./coverage-report/Summary.json | grep -o '[0-9]*\.[0-9]*' | head -1 | cut -d'.' -f1)
+          if [ ! -z "$COVERAGE" ] && [ "$COVERAGE" -le "100" ] && [ "$COVERAGE" -ge "0" ]; then
+            echo "✅ Parsed coverage from JSON (alternative): ${COVERAGE}%"
+          else
+            COVERAGE=""
+          fi
+        fi
+        
+        # Final fallback: Check if we have any coverage data
+        if [ -z "$COVERAGE" ]; then
+          echo "❌ Could not parse coverage percentage from any source"
+          echo "Available files:"
+          find ./coverage-report -type f -name "*.json" -o -name "*.xml" | head -10
+          echo "JSON content preview:"
+          if [ -f "./coverage-report/Summary.json" ]; then
+            head -20 "./coverage-report/Summary.json"
+          else
+            echo "No Summary.json found"
+          fi
+          echo "XML content preview:"
+          XML_FILE=$(find ./coverage -name "coverage.cobertura.xml" | head -1)
+          if [ ! -z "$XML_FILE" ]; then
+            head -10 "$XML_FILE"
+          else
+            echo "No XML coverage file found"
+          fi
+          exit 1
+        fi
+        
+        # Ensure coverage is a valid number
+        if ! [[ "$COVERAGE" =~ ^[0-9]+$ ]]; then
+          echo "❌ Invalid coverage value: '$COVERAGE'"
+          exit 1
+        fi
+        
+        echo "📊 Current Coverage: ${COVERAGE}%"
+        echo "🎯 Required Coverage: ${MIN_COVERAGE}%"
+        
+        # Check threshold
+        if [ "$COVERAGE" -lt "$MIN_COVERAGE" ]; then
+          echo ""
+          echo "❌ COVERAGE BELOW THRESHOLD!"
+          echo "   Current: ${COVERAGE}%"
+          echo "   Required: ${MIN_COVERAGE}%"
+          echo "   Shortfall: $((MIN_COVERAGE - COVERAGE))%"
+          echo ""
+          echo "Please add more tests to increase coverage before merging."
+          exit 1
+        else
+          echo ""
+          echo "✅ COVERAGE THRESHOLD MET!"
+          echo "   Current: ${COVERAGE}%"
+          echo "   Required: ${MIN_COVERAGE}%"
+          echo "   Excess: $((COVERAGE - MIN_COVERAGE))%"
+        fi
+    
+    - name: Upload Coverage Report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: ./coverage-report/
+        retention-days: 30
+    
+    - name: Upload Raw Coverage Data
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-data
+        path: ./coverage/
+        retention-days: 30
 
   security-scan:
     runs-on: ubuntu-latest

@@ -38,7 +38,15 @@ dotnet test --filter "FullyQualifiedName!~Integration"
 
 # Run only integration tests  
 dotnet test --filter "FullyQualifiedName~Integration"
+
+# Run tests with coverage (local development)
+dotnet test --collect:"XPlat Code Coverage" --results-directory ./coverage
 ```
+
+**Coverage Requirements:**
+- Minimum 80% line coverage enforced in CI/CD
+- Coverage reports generated automatically for all PRs
+- See [Coverage Documentation](docs/COVERAGE.md) for detailed information
 
 For detailed testing information, see [Testing Guide](docs/TESTING.md).
 
