@@ -73,7 +73,10 @@ jobs:
     
     - name: Install ReportGenerator
       if: always()
-      run: dotnet tool install -g dotnet-reportgenerator-globaltool
+      run: |
+        dotnet tool install -g dotnet-reportgenerator-globaltool
+        # Install bc calculator for decimal math
+        sudo apt-get update && sudo apt-get install -y bc
     
     - name: Generate Coverage Report
       if: always()
@@ -107,33 +110,87 @@ jobs:
         # Set minimum coverage threshold (configurable)
         MIN_COVERAGE=80
         
-        # Check if coverage summary exists
-        if [ ! -f "./coverage-report/Summary.json" ]; then
-          echo "❌ Coverage summary file not found"
-          exit 1
+        # Debug: List generated files
+        echo "Generated files in coverage-report:"
+        ls -la ./coverage-report/ || echo "Coverage report directory not found"
+        
+        # Try multiple approaches to get coverage data
+        COVERAGE=""
+        
+        # Method 1: Try JSON summary first
+        if [ -f "./coverage-report/Summary.json" ]; then
+          echo "Found Summary.json, attempting to parse..."
+          COVERAGE=$(cat ./coverage-report/Summary.json | grep -o '"linecoverage":"[0-9.]*"' | cut -d'"' -f4)
+          if [ ! -z "$COVERAGE" ]; then
+            echo "✅ Parsed coverage from Summary.json: ${COVERAGE}%"
+          fi
         fi
         
-        # Parse coverage percentage from JSON summary
-        COVERAGE=$(cat ./coverage-report/Summary.json | grep -o '"linecoverage":"[0-9.]*"' | cut -d'"' -f4)
-        
+        # Method 2: Try parsing from original XML files if JSON failed
         if [ -z "$COVERAGE" ]; then
-          echo "❌ Could not parse coverage percentage"
+          echo "Trying to parse coverage from XML files..."
+          XML_FILE=$(find ./coverage -name "coverage.cobertura.xml" | head -1)
+          if [ ! -z "$XML_FILE" ] && [ -f "$XML_FILE" ]; then
+            echo "Found XML file: $XML_FILE"
+            # Parse line-rate from XML (Cobertura format)
+            COVERAGE_DECIMAL=$(grep -o 'line-rate="[0-9.]*"' "$XML_FILE" | head -1 | cut -d'"' -f2)
+            if [ ! -z "$COVERAGE_DECIMAL" ]; then
+              # Convert decimal to percentage (multiply by 100)
+              COVERAGE=$(echo "scale=1; $COVERAGE_DECIMAL * 100" | bc -l | sed 's/\..*//')
+              echo "✅ Parsed coverage from XML: ${COVERAGE}%"
+            fi
+          fi
+        fi
+        
+        # Method 3: Try alternative JSON parsing with simpler approach
+        if [ -z "$COVERAGE" ] && [ -f "./coverage-report/Summary.json" ]; then
+          echo "Trying alternative JSON parsing..."
+          # Look for any number that might be coverage percentage
+          COVERAGE=$(cat ./coverage-report/Summary.json | grep -o '[0-9]*\.[0-9]*' | head -1 | cut -d'.' -f1)
+          if [ ! -z "$COVERAGE" ] && [ "$COVERAGE" -le "100" ] && [ "$COVERAGE" -ge "0" ]; then
+            echo "✅ Parsed coverage from JSON (alternative): ${COVERAGE}%"
+          else
+            COVERAGE=""
+          fi
+        fi
+        
+        # Final fallback: Check if we have any coverage data
+        if [ -z "$COVERAGE" ]; then
+          echo "❌ Could not parse coverage percentage from any source"
+          echo "Available files:"
+          find ./coverage-report -type f -name "*.json" -o -name "*.xml" | head -10
+          echo "JSON content preview:"
+          if [ -f "./coverage-report/Summary.json" ]; then
+            head -20 "./coverage-report/Summary.json"
+          else
+            echo "No Summary.json found"
+          fi
+          echo "XML content preview:"
+          XML_FILE=$(find ./coverage -name "coverage.cobertura.xml" | head -1)
+          if [ ! -z "$XML_FILE" ]; then
+            head -10 "$XML_FILE"
+          else
+            echo "No XML coverage file found"
+          fi
           exit 1
         fi
         
-        # Convert to integer for comparison (remove decimal point)
-        COVERAGE_INT=$(echo "$COVERAGE" | cut -d'.' -f1)
+        # Ensure coverage is a valid number
+        if ! [[ "$COVERAGE" =~ ^[0-9]+$ ]]; then
+          echo "❌ Invalid coverage value: '$COVERAGE'"
+          exit 1
+        fi
         
         echo "📊 Current Coverage: ${COVERAGE}%"
         echo "🎯 Required Coverage: ${MIN_COVERAGE}%"
         
         # Check threshold
-        if [ "$COVERAGE_INT" -lt "$MIN_COVERAGE" ]; then
+        if [ "$COVERAGE" -lt "$MIN_COVERAGE" ]; then
           echo ""
           echo "❌ COVERAGE BELOW THRESHOLD!"
           echo "   Current: ${COVERAGE}%"
           echo "   Required: ${MIN_COVERAGE}%"
-          echo "   Shortfall: $((MIN_COVERAGE - COVERAGE_INT))%"
+          echo "   Shortfall: $((MIN_COVERAGE - COVERAGE))%"
           echo ""
           echo "Please add more tests to increase coverage before merging."
           exit 1
@@ -142,7 +199,7 @@ jobs:
           echo "✅ COVERAGE THRESHOLD MET!"
           echo "   Current: ${COVERAGE}%"
           echo "   Required: ${MIN_COVERAGE}%"
-          echo "   Excess: $((COVERAGE_INT - MIN_COVERAGE))%"
+          echo "   Excess: $((COVERAGE - MIN_COVERAGE))%"
         fi
     
     - name: Upload Coverage Report
