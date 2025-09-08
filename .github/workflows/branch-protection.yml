@@ -71,12 +71,95 @@ jobs:
         cd database
         docker compose down
     
-    - name: Check test coverage
+    - name: Install ReportGenerator
+      if: always()
+      run: dotnet tool install -g dotnet-reportgenerator-globaltool
+    
+    - name: Generate Coverage Report
+      if: always()
       run: |
-        # This is a placeholder - you would typically use a tool like ReportGenerator
-        # to parse coverage and enforce minimum thresholds
-        echo "Checking test coverage..."
-        find ./coverage -name "*.xml" | head -1
+        echo "Generating coverage report..."
+        
+        # Check if coverage files exist
+        COVERAGE_FILES=$(find ./coverage -name "coverage.cobertura.xml" -o -name "*.xml" | grep -E "(coverage|cobertura)" | head -5 | tr '\n' ';')
+        
+        if [ -z "$COVERAGE_FILES" ]; then
+          echo "❌ No coverage files found in ./coverage directory"
+          echo "Contents of coverage directory:"
+          ls -la ./coverage/ || echo "Coverage directory does not exist"
+          exit 1
+        fi
+        
+        echo "Found coverage files: $COVERAGE_FILES"
+        
+        # Generate reports
+        reportgenerator \
+          -reports:"$COVERAGE_FILES" \
+          -targetdir:./coverage-report \
+          -reporttypes:"Html;JsonSummary;Badges" \
+          -verbosity:Info
+    
+    - name: Parse Coverage and Enforce Thresholds
+      if: always()
+      run: |
+        echo "Parsing coverage data and enforcing thresholds..."
+        
+        # Set minimum coverage threshold (configurable)
+        MIN_COVERAGE=80
+        
+        # Check if coverage summary exists
+        if [ ! -f "./coverage-report/Summary.json" ]; then
+          echo "❌ Coverage summary file not found"
+          exit 1
+        fi
+        
+        # Parse coverage percentage from JSON summary
+        COVERAGE=$(cat ./coverage-report/Summary.json | grep -o '"linecoverage":"[0-9.]*"' | cut -d'"' -f4)
+        
+        if [ -z "$COVERAGE" ]; then
+          echo "❌ Could not parse coverage percentage"
+          exit 1
+        fi
+        
+        # Convert to integer for comparison (remove decimal point)
+        COVERAGE_INT=$(echo "$COVERAGE" | cut -d'.' -f1)
+        
+        echo "📊 Current Coverage: ${COVERAGE}%"
+        echo "🎯 Required Coverage: ${MIN_COVERAGE}%"
+        
+        # Check threshold
+        if [ "$COVERAGE_INT" -lt "$MIN_COVERAGE" ]; then
+          echo ""
+          echo "❌ COVERAGE BELOW THRESHOLD!"
+          echo "   Current: ${COVERAGE}%"
+          echo "   Required: ${MIN_COVERAGE}%"
+          echo "   Shortfall: $((MIN_COVERAGE - COVERAGE_INT))%"
+          echo ""
+          echo "Please add more tests to increase coverage before merging."
+          exit 1
+        else
+          echo ""
+          echo "✅ COVERAGE THRESHOLD MET!"
+          echo "   Current: ${COVERAGE}%"
+          echo "   Required: ${MIN_COVERAGE}%"
+          echo "   Excess: $((COVERAGE_INT - MIN_COVERAGE))%"
+        fi
+    
+    - name: Upload Coverage Report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: ./coverage-report/
+        retention-days: 30
+    
+    - name: Upload Raw Coverage Data
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-data
+        path: ./coverage/
+        retention-days: 30
 
   security-scan:
     runs-on: ubuntu-latest

@@ -79,16 +79,19 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 
 5. **GitHub Actions will automatically:**
    - Run all tests
+   - Enforce minimum 80% test coverage
    - Check for vulnerabilities
    - Validate commit message format
    - Generate code coverage reports
 
 ### Code Quality Standards
 
-- **Test Coverage:** Maintain high test coverage (aim for >90%)
+- **Test Coverage:** Minimum 80% line coverage enforced (aim for >90%)
 - **Code Style:** Follow C# conventions and .NET guidelines
 - **Documentation:** Update README and docs as needed
 - **Security:** No vulnerable dependencies allowed
+
+Coverage reports are automatically generated for every PR and available as downloadable artifacts. See [Coverage Documentation](docs/COVERAGE.md) for details.
 
 ### Local Development
 
@@ -102,8 +105,15 @@ dotnet build --configuration Release
 # Run all tests
 dotnet test --configuration Release
 
+# Run tests with coverage
+dotnet test --configuration Release --collect:"XPlat Code Coverage" --results-directory ./coverage
+
 # Run specific test class
 dotnet test --filter "ClassName=UserTests"
+
+# Generate coverage report locally (requires ReportGenerator)
+dotnet tool install -g dotnet-reportgenerator-globaltool
+reportgenerator -reports:"./coverage/**/coverage.cobertura.xml" -targetdir:./coverage-report -reporttypes:"Html"
 ```
 
 ## Questions?
